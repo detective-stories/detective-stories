@@ -20,12 +20,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import RedirectView
 
 from . import views
+from .settings import TELEGRAM_TOKEN
 
 urlpatterns = [
     path('tgadmin/', admin.site.urls),
     path('__debug__/', include(debug_toolbar.urls)),
     path('', views.index, name="index"),
-    path('super_secter_webhook/', csrf_exempt(views.TelegramBotWebhookView.as_view())),
+    path(f'webhook/{TELEGRAM_TOKEN}/', csrf_exempt(views.TelegramBotWebhookView.as_view())),
     path(
         "favicon.ico",
         RedirectView.as_view(url="https://www.google.com/favicon.ico"),
