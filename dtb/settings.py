@@ -138,7 +138,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles', 'static')
 
 
 # -----> CELERY
-REDIS_URL = os.getenv('KV_URL', 'redis://redis:6379')
+REDIS_URL = os.getenv('REDIS_URL', 'redis://redis:6379')
 BROKER_URL = REDIS_URL
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
