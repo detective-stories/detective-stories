@@ -3,6 +3,10 @@
     {
       "src": "dtb/wsgi.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "build.sh",
+      "use": "@vercel/static-build"
     }
   ],
   "routes": [
