@@ -17,6 +17,7 @@ import debug_toolbar
 from django.contrib import admin
 from django.urls import path, include
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import RedirectView
 
 from . import views
 
@@ -25,4 +26,8 @@ urlpatterns = [
     path('__debug__/', include(debug_toolbar.urls)),
     path('', views.index, name="index"),
     path('super_secter_webhook/', csrf_exempt(views.TelegramBotWebhookView.as_view())),
+    path(
+        "favicon.ico",
+        RedirectView.as_view(url="https://www.google.com/favicon.ico"),
+    ),
 ]
