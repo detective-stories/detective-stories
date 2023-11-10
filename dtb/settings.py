@@ -65,6 +65,8 @@ MIDDLEWARE = [
 INTERNAL_IPS = [
     # ...
     '127.0.0.1',
+    '.vercel.app',
+    '.now.sh',
     # ...
 ]
 
@@ -97,7 +99,7 @@ ASGI_APPLICATION = 'dtb.asgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(conn_max_age=600, default="sqlite:///db.sqlite3"),
+    'default': dj_database_url.config(conn_max_age=600, default="sqlite:///db.sqlite3", env='POSTGRES_URL')
 }
 
 # Password validation
