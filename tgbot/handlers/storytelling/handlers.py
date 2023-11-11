@@ -55,7 +55,7 @@ def story_start_handler(update: Update, context: CallbackContext):
         parse_mode='Markdown',
         text=static_text.story_start_md.format(
             title=escape_markdown(story.title, version=1),
-            description=escape_markdown(story.description, version=1)
+            description=story.description, version=1
         )
     )
     # linked for now, but can be changed later for progression of the story
