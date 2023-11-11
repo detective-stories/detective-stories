@@ -32,3 +32,6 @@ black
 flake8
 isort
 pytest
+
+# openai
+openai==1.2.3
