@@ -4,7 +4,7 @@ from django.views import View
 from django.http import JsonResponse
 from python_telegram_bot_django_persistence.persistence import DjangoPersistence
 from telegram import Update
-from telegram.ext import Dispatcher
+from telegram.ext import Dispatcher, DictPersistence
 
 from tgbot.dispatcher import setup_dispatcher, n_workers
 from tgbot.main import bot
@@ -20,7 +20,8 @@ class TelegramBotWebhookView(View):
 
     def __init__(self):
         super().__init__()
-        self.dispatcher = setup_dispatcher(Dispatcher(bot, update_queue=None, workers=n_workers, use_context=True, persistence=DjangoPersistence()))
+        # FIXME: use DjangoPersistence
+        self.dispatcher = setup_dispatcher(Dispatcher(bot, update_queue=None, workers=n_workers, use_context=True, persistence=DictPersistence()))
 
     # WARNING: if fail - Telegram webhook will be delivered again.
     def post(self, request, *args, **kwargs):
