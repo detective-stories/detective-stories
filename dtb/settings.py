@@ -161,3 +161,5 @@ TELEGRAM_LOGS_CHAT_ID = os.getenv("TELEGRAM_LOGS_CHAT_ID", default=None)
 #     # django.contrib.auth) you may enable sending PII data.
 #     send_default_pii=True
 # )
+
+OPENAI_TOKEN = os.getenv("OPENAI_TOKEN", default=None)

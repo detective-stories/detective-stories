@@ -1,3 +1,4 @@
+import asyncio
 from functools import wraps
 from typing import Callable
 
@@ -34,3 +35,12 @@ def send_typing_action(func: Callable):
         return func(update, context, *args, **kwargs)
 
     return command_func
+
+
+def aexec(func):
+    def wrapper(update: Update, context: CallbackContext):
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(func(update, context))
+        loop.close()
+    return wrapper

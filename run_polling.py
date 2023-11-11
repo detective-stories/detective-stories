@@ -4,7 +4,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dtb.settings')
 django.setup()
 
 from telegram import Bot
-from telegram.ext import Updater
+from telegram.ext import Updater, DictPersistence
 
 from dtb.settings import TELEGRAM_TOKEN
 from tgbot.dispatcher import setup_dispatcher
@@ -12,7 +12,7 @@ from tgbot.dispatcher import setup_dispatcher
 
 def run_polling(tg_token: str = TELEGRAM_TOKEN):
     """ Run bot in polling mode """
-    updater = Updater(tg_token, use_context=True)
+    updater = Updater(tg_token, use_context=True, persistence=DictPersistence())
 
     dp = updater.dispatcher
     dp = setup_dispatcher(dp)
