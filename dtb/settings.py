@@ -10,12 +10,10 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Load env variables from file
 dotenv_file = BASE_DIR / ".env"
 if os.path.isfile(dotenv_file):
     dotenv.load_dotenv(dotenv_file)
-
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv(
@@ -28,8 +26,7 @@ if os.environ.get('DJANGO_DEBUG', default=False) in ['True', 'true', '1', True]:
 else:
     DEBUG = False
 
-ALLOWED_HOSTS = ["*",]  # since Telegram uses a lot of IPs for webhooks
-
+ALLOWED_HOSTS = ["*", ]  # since Telegram uses a lot of IPs for webhooks
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -41,6 +38,7 @@ INSTALLED_APPS = [
 
     # 3rd party apps
     'debug_toolbar',
+    'python_telegram_bot_django_persistence',
 
     # local apps
     'users.apps.UsersConfig',
@@ -91,7 +89,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'dtb.wsgi.application'
 ASGI_APPLICATION = 'dtb.asgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
@@ -117,7 +114,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
@@ -126,7 +122,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
@@ -165,4 +160,3 @@ TELEGRAM_LOGS_CHAT_ID = os.getenv("TELEGRAM_LOGS_CHAT_ID", default=None)
 #     # django.contrib.auth) you may enable sending PII data.
 #     send_default_pii=True
 # )
-

@@ -23,3 +23,6 @@ python-telegram-bot==13.15  # last sync version
 
 # monitoring
 # sentry-sdk
+
+# Django persistence
+python-telegram-bot-django-persistence==0.1.7
