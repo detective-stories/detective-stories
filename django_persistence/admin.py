@@ -10,12 +10,12 @@ class BotDataAdmin(admin.ModelAdmin):
 
 @admin.register(ChatData)
 class ChatDataAdmin(admin.ModelAdmin):
-    list_display = ("namespace", "chat_id")
+    list_display = ("namespace", "chat_id", "data")
 
 
 @admin.register(UserData)
 class UserDataAdmin(admin.ModelAdmin):
-    list_display = ("namespace", "user_id")
+    list_display = ("namespace", "user_id", "data")
 
 
 @admin.register(CallbackData)
@@ -25,4 +25,4 @@ class CallbackDataAdmin(admin.ModelAdmin):
 
 @admin.register(ConversationData)
 class ConversationDataAdmin(admin.ModelAdmin):
-    list_display = ("namespace", "name", "key")
+    list_display = ("namespace", "name", "key", "state")
