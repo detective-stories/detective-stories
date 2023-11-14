@@ -17,7 +17,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "dtb/wsgi.py"
+      "dest": "dtb/main.py"
     }
   ],
   "outputDirectory": "staticfiles"
