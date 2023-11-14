@@ -15,8 +15,12 @@ class Story(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=256)
     description = models.TextField()  # story description
-    cover_prompt = models.CharField(max_length=1024)  # prompt for the cover image that will be shown with the story
-    solution = models.TextField()  # story solution that will be shown after the story is solved
+    cover_prompt = models.CharField(
+        max_length=1024
+    )  # prompt for the cover image that will be shown with the story
+    solution = (
+        models.TextField()
+    )  # story solution that will be shown after the story is solved
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -26,7 +30,7 @@ class Story(models.Model):
         return Agent.objects.filter(story=self)
 
     def __str__(self):
-        return f'{self.title} ({self.id})'
+        return f"{self.title} ({self.id})"
 
 
 class Agent(models.Model):
@@ -34,13 +38,14 @@ class Agent(models.Model):
     Represents an agent that can be interacted with in a story. The agent is linked to a story and has a name.
     The agent is played by a Language Model that acts as the agent's brain.
     """
+
     id = models.AutoField(primary_key=True)
     story = models.ForeignKey(Story, on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
     prompt = models.TextField()
 
     def __str__(self):
-        return f'{self.name} ({self.id})'
+        return f"{self.name} ({self.id})"
 
 
 class StoryCompletion(models.Model):
@@ -48,8 +53,9 @@ class StoryCompletion(models.Model):
     Represents a story progress of a user. The state is a string that contains the current state of the story.
     Messages are stored in the AgentInteractionMessage model.
     """
+
     id = models.AutoField(primary_key=True)
-    user = models.ForeignKey('users.User', on_delete=models.CASCADE)
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE)
     story = models.ForeignKey(Story, on_delete=models.CASCADE)
     state = models.TextField()
 
@@ -60,66 +66,58 @@ class StoryCompletion(models.Model):
     score = models.IntegerField(null=True)
 
     def __str__(self):
-        return f'{self.user.username} - {self.story.title} ({self.id})'
+        return f"{self.user.username} - {self.story.title} ({self.id})"
 
     @classmethod
-    def start_story(cls, user: User, story: Story) -> StoryCompletion:
+    async def start_story(cls, user: User, story: Story) -> StoryCompletion:
         """
         Start a story for the given user. Returns the StoryCompletion object.
         """
-        story_completion = cls.objects.create(
-            user=user,
-            story=story,
-            state=""
-        )
+        story_completion = await cls.objects.acreate(user=user, story=story, state="")
 
         # add agent interactions
-        for agent in story.agents():
-            agent_interaction = AgentInteraction.objects.create(
-                story_completion=story_completion,
-                agent=agent
+        async for agent in story.agents():
+            agent_interaction = await AgentInteraction.objects.acreate(
+                story_completion=story_completion, agent=agent
             )
             # add system prompt initial message
-            AgentInteractionMessage.objects.create(
-                agent_interaction=agent_interaction,
-                message=agent.prompt,
-                role='system'
+            await AgentInteractionMessage.objects.acreate(
+                agent_interaction=agent_interaction, message=agent.prompt, role="system"
             )
         return story_completion
 
-    async def question_agent(self, agent: Agent, message: str, llm_helper: LLMHelper) -> str:
+    async def question_agent(
+        self, agent: Agent, message: str, llm_helper: LLMHelper
+    ) -> str:
         """
         Question the given agent with the given message. Returns the agent's answer.
         """
         self.check_completed()
-        logger.info(f'Questioning agent {agent.name} with message: {message}')
+        logger.info(f"Questioning agent {agent.name} with message: {message}")
         agent_interaction = await AgentInteraction.objects.aget(
-            story_completion=self,
-            agent=agent
+            story_completion=self, agent=agent
         )
         await AgentInteractionMessage.objects.acreate(
-            agent_interaction=agent_interaction,
-            message=message,
-            role='user'
+            agent_interaction=agent_interaction, message=message, role="user"
         )
         answer = await llm_helper.chat_complete(
             messages=await agent_interaction.get_openai_object()
         )
         await AgentInteractionMessage.objects.acreate(
-            agent_interaction=agent_interaction,
-            message=answer,
-            role='assistant'
+            agent_interaction=agent_interaction, message=answer, role="assistant"
         )
         return answer
 
-    def quit(self):
+    async def quit(self):
         """Exits the story completion."""
         self.check_completed()
         self.completed_at = timezone.now()
         self.score = 0
-        self.save()
+        await self.asave()
 
-    async def complete(self, prediction: str, solution: str, llm_helper: LLMHelper) -> bool:
+    async def complete(
+        self, prediction: str, solution: str, llm_helper: LLMHelper
+    ) -> bool:
         self.check_completed()
         is_solved = await llm_helper.is_solved(prediction, solution)
         if is_solved:
@@ -132,7 +130,7 @@ class StoryCompletion(models.Model):
 
     def check_completed(self):
         if self.completed_at is not None:
-            raise Exception('Story completion is already completed.')
+            raise Exception("Story completion is already completed.")
 
 
 class AgentInteraction(models.Model):
@@ -141,18 +139,19 @@ class AgentInteraction(models.Model):
 
     Contains a reference to the story completion and the agent that is interacted with.
     """
+
     id = models.AutoField(primary_key=True)
     story_completion = models.ForeignKey(StoryCompletion, on_delete=models.CASCADE)
     agent = models.ForeignKey(Agent, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'{self.agent.name} ({self.agent.id}) - {self.agentinteractionmessage_set.count()} messages'
+        return f"{self.agent.name} ({self.agent.id}) - {self.agentinteractionmessage_set.count()} messages"
 
     async def get_openai_object(self):
-        res = []
-        async for message in self.agentinteractionmessage_set.all():
-            res.append(message.get_openai_object())
-        return res
+        return [
+            await message.get_openai_object()
+            async for message in self.agentinteractionmessage_set.all()
+        ]
 
 
 class AgentInteractionMessage(models.Model):
@@ -163,10 +162,10 @@ class AgentInteractionMessage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.role}: {self.message}'
+        return f"{self.role}: {self.message}"
 
-    def get_openai_object(self):
+    async def get_openai_object(self):
         return {
-            'content': self.message,
-            'role': self.role,
+            "content": self.message,
+            "role": self.role,
         }

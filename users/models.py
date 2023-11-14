@@ -4,8 +4,10 @@ from typing import Union, Optional, Tuple
 
 from django.db import models
 from django.db.models import QuerySet, Manager
-from telegram import Update
-from telegram.ext import CallbackContext
+from telegram._update import Update
+from telegram.ext import ContextTypes
+
+# from telegram import Update
 
 from tgbot.handlers.utils.info import extract_user_data_from_update
 from utils.models import CreateUpdateTracker, nb, CreateTracker, GetOrNoneManager
@@ -35,10 +37,10 @@ class User(CreateUpdateTracker):
         return f'@{self.username}' if self.username is not None else f'{self.user_id}'
 
     @classmethod
-    def get_user_and_created(cls, update: Update, context: CallbackContext) -> Tuple[User, bool]:
+    async def get_user_and_created(cls, update: Update, context: ContextTypes.DEFAULT_TYPE) -> Tuple[User, bool]:
         """ python-telegram-bot's Update, Context --> User instance """
         data = extract_user_data_from_update(update)
-        u, created = cls.objects.update_or_create(user_id=data["user_id"], defaults=data)
+        u, created = await cls.objects.aupdate_or_create(user_id=data["user_id"], defaults=data)
 
         if created:
             # Save deep_link to User model
@@ -51,27 +53,17 @@ class User(CreateUpdateTracker):
         return u, created
 
     @classmethod
-    def get_user(cls, update: Update, context: CallbackContext) -> User:
-        u, _ = cls.get_user_and_created(update, context)
+    async def get_user(cls, update: Update, context: ContextTypes.DEFAULT_TYPE) -> User:
+        u, _ = await cls.get_user_and_created(update, context)
         return u
 
     @classmethod
-    def get_user_by_username_or_user_id(cls, username_or_user_id: Union[str, int]) -> Optional[User]:
+    async def get_user_by_username_or_user_id(cls, username_or_user_id: Union[str, int]) -> Optional[User]:
         """ Search user in DB, return User or None if not found """
         username = str(username_or_user_id).replace("@", "").strip().lower()
         if username.isdigit():  # user_id
-            return cls.objects.filter(user_id=int(username)).first()
-        return cls.objects.filter(username__iexact=username).first()
-
-    @property
-    def invited_users(self) -> QuerySet[User]:
-        return User.objects.filter(deep_link=str(self.user_id), created_at__gt=self.created_at)
-
-    @property
-    def tg_str(self) -> str:
-        if self.username:
-            return f'@{self.username}'
-        return f"{self.first_name} {self.last_name}" if self.last_name else f"{self.first_name}"
+            return await cls.objects.filter(user_id=int(username)).afirst()
+        return await cls.objects.filter(username__iexact=username).afirst()
 
 
 class Location(CreateTracker):
