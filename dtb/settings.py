@@ -58,6 +58,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
 
+CSRF_TRUSTED_ORIGINS = ["https://detective-bot.wlko.me"]
+
 INTERNAL_IPS = [
     # ...
     "127.0.0.1",
