@@ -45,7 +45,7 @@ class Agent(models.Model):
     prompt = models.TextField()
 
     def __str__(self):
-        return f"{self.name} ({self.id})"
+        return f"{self.name} @ {self.story.title} ({self.id})"
 
 
 class StoryCompletion(models.Model):
@@ -145,7 +145,7 @@ class AgentInteraction(models.Model):
     agent = models.ForeignKey(Agent, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.agent.name} ({self.agent.id}) - {self.agentinteractionmessage_set.count()} messages"
+        return f"{self.agent.name} @ {self.agent.story.title} with {self.story_completion.user.username} - {self.agentinteractionmessage_set.count()} messages"
 
     async def get_openai_object(self):
         return [
@@ -162,7 +162,7 @@ class AgentInteractionMessage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.role}: {self.message}"
+        return f"({self.role}) {self.agent_interaction.agent.name}: {self.message}"
 
     async def get_openai_object(self):
         return {
