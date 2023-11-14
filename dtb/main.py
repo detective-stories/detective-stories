@@ -27,8 +27,7 @@ logging.basicConfig(
 # set higher logging level for httpx to avoid all GET and POST requests being logged
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-# persistence = DjangoPersistence()
-persistence = DictPersistence()
+persistence = DjangoPersistence()
 ptb_application = (
     Application.builder().bot(bot).updater(None).persistence(persistence).build()
 )
