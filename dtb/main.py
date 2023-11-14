@@ -35,7 +35,7 @@ ptb_application = (
 setup_event_handlers(ptb_application)
 AppHolder.set_instance(ptb_application)
 
-PORT = 8000
+PORT = int(os.environ.get("PORT", "8000"))
 
 
 async def main() -> None:
@@ -52,9 +52,7 @@ async def main() -> None:
     # Run application and webserver together
     async with ptb_application:
         await ptb_application.start()
-        print("Webserver started")
         await webserver.serve()
-        print("Webserver stopped")
         await ptb_application.stop()
 
 
