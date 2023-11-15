@@ -1,3 +1,4 @@
+from asgiref.sync import sync_to_async
 from telegram import Update
 from telegram.ext import ContextTypes
 
@@ -10,7 +11,7 @@ async def extract_story(update: Update, context: ContextTypes.DEFAULT_TYPE) -> S
     Extracts the story from the user data.
     """
     user = await User.get_user(update, context)
-    return user.current_story
+    return await sync_to_async(lambda u: u.current_story)(user)
 
 
 async def extract_agent(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Agent:
@@ -18,7 +19,7 @@ async def extract_agent(update: Update, context: ContextTypes.DEFAULT_TYPE) -> A
     Extracts the agent from the user data.
     """
     user = await User.get_user(update, context)
-    return user.current_agent
+    return await sync_to_async(lambda u: u.current_agent)(user)
 
 
 async def extract_story_completion(
@@ -28,7 +29,7 @@ async def extract_story_completion(
     Extracts the story completion from the user data.
     """
     user = await User.get_user(update, context)
-    return user.current_completion
+    return await sync_to_async(lambda u: u.current_completion)(user)
 
 
 async def set_story(update: Update, context: ContextTypes.DEFAULT_TYPE, story: Story):
