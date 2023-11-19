@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import asyncio
 import logging
+from typing import Callable, Coroutine, Any
 
 from django.db import models
 from django.utils import timezone
@@ -87,25 +89,54 @@ class StoryCompletion(models.Model):
         return story_completion
 
     async def question_agent(
-        self, agent: Agent, message: str, llm_helper: LLMHelper
+        self,
+        agent: Agent,
+        message: str,
+        llm_helper: LLMHelper,
+        message_callback: Callable[[str], Coroutine[Any, Any, None]] = None,
     ) -> str:
         """
         Question the given agent with the given message. Returns the agent's answer.
+        :param agent: The agent to question.
+        :param message: The message to send to the agent.
+        :param llm_helper: LLM service to use.
+        :param message_callback: The callback function to call when the agent answer updates.
+        :return: The agent's answer.
         """
         self.check_completed()
         logger.info(f"Questioning agent {agent.name} with message: {message}")
+
+        # Get the agent interaction object to add the message to
         agent_interaction = await AgentInteraction.objects.aget(
             story_completion=self, agent=agent
         )
+
+        # Craft messages for LLM
+        #  We add the user's message to the messages list,
+        #  because it is not saved in the database yet
+        #  in case the LLM raises an exception
+        messages = await agent_interaction.get_openai_object() + [
+            {"role": "user", "content": message}
+        ]
+
+        # Get the agent's answer from the LLM
+        # Wait for the answer for 60 seconds
+        answer = await asyncio.wait_for(
+            llm_helper.chat_complete(
+                messages=messages,
+                message_callback=message_callback,
+            ),
+            timeout=60,
+        )
+
+        # If the answer is received, add the message and the answer to the database
         await AgentInteractionMessage.objects.acreate(
             agent_interaction=agent_interaction, message=message, role="user"
-        )
-        answer = await llm_helper.chat_complete(
-            messages=await agent_interaction.get_openai_object()
         )
         await AgentInteractionMessage.objects.acreate(
             agent_interaction=agent_interaction, message=answer, role="assistant"
         )
+
         return answer
 
     async def quit(self):

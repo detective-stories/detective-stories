@@ -1,4 +1,8 @@
+import html
+import logging
+
 from telegram._update import Update
+from telegram.constants import ParseMode
 from telegram.ext import ConversationHandler, ContextTypes
 from telegram.helpers import escape_markdown
 
@@ -21,6 +25,7 @@ from tgbot.handlers.storytelling.keyboards import (
 from users.models import User
 
 global_llm_helper = LLMHelper()
+logger = logging.getLogger(__name__)
 
 
 async def command_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -107,25 +112,50 @@ async def agent_answer_handler(update: Update, context: ContextTypes.DEFAULT_TYP
 
     # answer placeholder
     placeholder_message = await update.effective_message.reply_text(
-        text=escape_markdown(static_text.loading_answer, version=1),
-        parse_mode="Markdown",
-    )
-    # TODO: add cool loading animation to show that the bot is thinking
-
-    # question agent
-    answer = await story_completion.question_agent(agent, message, global_llm_helper)
-
-    # delete placeholder message
-    await placeholder_message.delete()
-
-    # send message with answer
-    await update.effective_message.reply_text(
-        text=static_text.agent_answer_md.format(
-            agent_name=escape_markdown(agent.name, version=1),
-            agent_answer=escape_markdown(answer, version=1),
+        text=static_text.agent_thinking_md.format(
+            agent_name=escape_markdown(agent.name, version=1)
         ),
         parse_mode="Markdown",
     )
+
+    async def update_message(current_answer: str) -> None:
+        """Update message with agent (partial) answer"""
+        # Update message
+        try:
+            await placeholder_message.edit_text(
+                text=static_text.agent_partial_answer_html.format(
+                    agent_name=html.escape(agent.name),
+                    agent_answer=html.escape(current_answer),
+                ),
+                parse_mode=ParseMode.HTML,
+            )
+        except Exception as e:
+            # Hack: if the message is not ~visually~ modified,
+            #  telegram raises an error
+            logger.debug(e)
+
+    # Question agent
+    try:
+        answer = await story_completion.question_agent(
+            agent, message, global_llm_helper, update_message
+        )
+        # Final answer
+        await placeholder_message.edit_text(
+            text=static_text.agent_full_answer_html.format(
+                agent_name=html.escape(agent.name),
+                agent_answer=html.escape(answer),
+            ),
+            parse_mode=ParseMode.HTML,
+        )
+    except Exception as e:
+        # If the agent fails to answer, log the error and notify the user
+        logger.error(e)
+        await placeholder_message.edit_text(
+            text=static_text.agent_failure_md.format(
+                agent_name=escape_markdown(agent.name, version=1)
+            ),
+            parse_mode="Markdown",
+        )
 
     return states.TALKING_TO_AGENT
 

@@ -1,4 +1,4 @@
-choose_story = '🕵️‍♂️ Choose a Detective Story'
+choose_story = "🕵️‍♂️ Choose a Detective Story"
 
 story_start_md = """
 *📜 {title}*
@@ -24,10 +24,28 @@ Type your message.
 To return to the character list, type /back 🔙
 """.strip()
 
-agent_answer_md = """
-*🕵️‍♂️ {agent_name}* says:
+agent_partial_answer_html = """
+🕵️‍♂️ <b>{agent_name}</b> is saying...
 
-_{agent_answer}_
+<i>{agent_answer}</i>
+""".strip()
+
+agent_full_answer_html = """
+🕵️‍♂️ <b>{agent_name}</b> says:
+
+<i>{agent_answer}</i>
+
+To go back to the characters list, type /back 🔙
+""".strip()
+
+agent_thinking_md = """
+*🕵️‍♂️ {agent_name}* is thinking... ⏳
+""".strip()
+
+agent_failure_md = """
+*🕵️‍♂️ {agent_name}* is unable to answer your question.
+
+Please try again later.
 
 To go back to the characters list, type /back 🔙
 """.strip()
@@ -56,10 +74,10 @@ quit_md = """
 You have exited the mystery. 🚪🔍
 """.strip()
 
-correct = 'correct ✅'
-incorrect = 'incorrect ❌'
+correct = "correct ✅"
+incorrect = "incorrect ❌"
 
-loading_answer = 'Loading answer... ⏳'
+loading_answer = "Loading answer... ⏳"
 
 start_md = """
 🕵️‍♂️ **Welcome to Detective Story Bot!**

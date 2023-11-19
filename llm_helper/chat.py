@@ -1,15 +1,14 @@
 import logging
 import os
-from typing import Any, List
+from typing import Any, List, Callable, Coroutine
 
 import openai
 from dtb.settings import OPENAI_TOKEN
 
-logger = logging.getLogger(__name__)
-
 
 class LLMHelper:
-    def __init__(self, model="gpt-3.5-turbo"):
+    logger = logging.getLogger(__name__)
+
     def __init__(self, model="gpt-4"):
         self.client = openai.AsyncOpenAI(api_key=OPENAI_TOKEN)
         self.model = model
@@ -17,14 +16,30 @@ class LLMHelper:
     async def chat_complete(
         self,
         messages: List[Any],
+        message_callback: Callable[[str], Coroutine[Any, Any, None]] = None,
     ) -> str:
-        logger.info(f"Chat complete with messages: {messages}")
-        chat_completion = await self.client.chat.completions.create(
-            messages=messages,
-            model=self.model,
+        self.logger.info(f"Chat complete with messages: {messages}")
+        # Create a stream from OpenAI API
+        stream = await self.client.chat.completions.create(
+            messages=messages, model=self.model, stream=True
         )
-        res = chat_completion.choices[0].message.content.strip()
-        logger.debug(f"Chat complete response: {res}")
+        # Iterate over the stream and append the deltas to the result
+        res = ""
+        async for item in stream:
+            self.logger.debug(item)
+            delta = item.choices[0].delta.content
+
+            # if delta is None, this is the last message
+            if delta is None:
+                break
+
+            res += delta
+
+            # update the message callback
+            if message_callback is not None:
+                await message_callback(res)
+
+        self.logger.debug(f"Chat complete response: {res}")
         return res
 
     comparison_system_prompt = (
