@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 
 class LLMHelper:
     def __init__(self, model="gpt-3.5-turbo"):
+    def __init__(self, model="gpt-4"):
         self.client = openai.AsyncOpenAI(api_key=OPENAI_TOKEN)
         self.model = model
 
