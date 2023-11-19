@@ -38,12 +38,12 @@ agent_full_answer_html = """
 To go back to the characters list, type /back 🔙
 """.strip()
 
-agent_thinking_md = """
-*🕵️‍♂️ {agent_name}* is thinking... ⏳
+agent_thinking_html = """
+<b>🕵️‍♂️ {agent_name}</b> is thinking... ⏳
 """.strip()
 
-agent_failure_md = """
-*🕵️‍♂️ {agent_name}* is unable to answer your question.
+agent_failure_html = """
+<b>🕵️‍♂️ {agent_name}</b> is unable to answer your question.
 
 Please try again later.
 

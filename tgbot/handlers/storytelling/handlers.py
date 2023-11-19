@@ -112,10 +112,10 @@ async def agent_answer_handler(update: Update, context: ContextTypes.DEFAULT_TYP
 
     # answer placeholder
     placeholder_message = await update.effective_message.reply_text(
-        text=static_text.agent_thinking_md.format(
-            agent_name=escape_markdown(agent.name, version=1)
+        text=static_text.agent_thinking_html.format(
+            agent_name=html.escape(agent.name)
         ),
-        parse_mode="Markdown",
+        parse_mode=ParseMode.HTML,
     )
 
     async def update_message(current_answer: str) -> None:
@@ -151,10 +151,10 @@ async def agent_answer_handler(update: Update, context: ContextTypes.DEFAULT_TYP
         # If the agent fails to answer, log the error and notify the user
         logger.error(e)
         await placeholder_message.edit_text(
-            text=static_text.agent_failure_md.format(
-                agent_name=escape_markdown(agent.name, version=1)
+            text=static_text.agent_failure_html.format(
+                agent_name=html.escape(agent.name)
             ),
-            parse_mode="Markdown",
+            parse_mode=ParseMode.HTML,
         )
 
     return states.TALKING_TO_AGENT
