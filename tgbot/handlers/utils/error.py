@@ -25,9 +25,10 @@ async def send_stacktrace_to_tg_chat(
 
     # Build the message with some markup and additional information about what happened.
     # You might need to add some logic to deal with messages longer than the 4096 character limit.
+    escaped_tb_string = html.escape(tb_string)[:4000]
     message = (
         f"An exception was raised while handling an update\n"
-        f"<pre>{html.escape(tb_string)}</pre>"
+        f"<pre>{escaped_tb_string}</pre>"
     )
 
     user_message = """
