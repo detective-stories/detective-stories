@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from typing import Callable, Coroutine, Any
+from os import linesep
 
 from django.db import models
 from django.utils import timezone
@@ -13,36 +14,42 @@ from users.models import User
 logger = logging.getLogger(__name__)
 
 
-def get_system_prompt(full_desc: str, names: list[str]) -> str:
+def get_system_prompt(full_desc: str, names: list[str], descriptions: list[str]) -> str:
             return f"""
-            The detective story:
+The detective story:
 
-            {full_desc}
+{full_desc}
 
-            The user is detective.
+Characters for this story are 
+{
+    (linesep + linesep).join([
+        f"{name}: {desc}" for name, desc in zip(names, descriptions)
+    ])
+}
 
-            You need to act for {", ".join(names)}.
-            The user message will start with 
-            "Message to [{"/".join(names)}]: 
-            
-            <message here>"
-            You should start your answer with 
-            "Answer from [{"/".join(names)}]:
-            
-            <answer here>". 
-            When answering, you should act like a respective person, not like an AI assistant. Speak only English.
+The user is detective.
 
-            The detective (user) knows just the setting at the beginning. He has no prior knowledge of the story. 
-            If he is saying something controversial to what was said before or what is stated in the story's settings, 
-            you should correct him. 
+You need to act for {", ".join(names)}.
+The user message will start with 
+"Message to [{"/".join(names)}]: 
 
-            Act like all characters have their own private talks with the detective.
+<message here>"
+You should start your answer with 
+"Answer from [{"/".join(names)}]:
 
-            You can make up some information but you need to be consistent with it. 
+<answer here>". 
+When answering, you should act like a respective person, not like an AI assistant. Speak only English.
 
-            When answering take into account, who knows what. If a person does not know something, 
-            it is possible to say that he doesn't know this.
+The detective (user) knows just the setting at the beginning. He has no prior knowledge of the story. 
+If he is saying something controversial to what was said before or what is stated in the story's settings, 
+you should correct him. 
 
+Act like all characters have their own private talks with the detective.
+
+You can make up some information but you need to be consistent with it. 
+
+When answering take into account, who knows what. If a person does not know something, 
+it is possible to say that he doesn't know this.
             """
 
 
@@ -110,16 +117,11 @@ class StoryCompletion(models.Model):
         """
         story_completion = await cls.objects.acreate(user=user, story=story, state="")
 
-        names = []
-
-        # iterate over agent and add their names
-
-        async for agent in story.agents():
-            names.append(agent.name)
-
         names = [agent.name async for agent in story.agents()]
 
-        system_prompt = get_system_prompt(story.solution, names)
+        descriptions = [agent.prompt async for agent in story.agents()]
+
+        system_prompt = get_system_prompt(story.solution, names, descriptions)
 
         print(system_prompt)
 
@@ -203,16 +205,17 @@ class StoryCompletion(models.Model):
 
     async def complete(
         self, prediction: str, solution: str, llm_helper: LLMHelper
-    ) -> bool:
+    ) -> tuple[bool, str]:
         self.check_completed()
-        is_solved = await llm_helper.is_solved(prediction, solution)
+        score, hint = await llm_helper.is_solved(prediction, solution)
+        is_solved = score >= 10
         if is_solved:
             self.score = 1
+            self.completed_at = timezone.now()
         else:
             self.score = 0
-        self.completed_at = timezone.now()
         await self.asave()
-        return is_solved
+        return is_solved, score, hint
 
     def check_completed(self):
         if self.completed_at is not None:
