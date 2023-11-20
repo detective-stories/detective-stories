@@ -13,6 +13,39 @@ from users.models import User
 logger = logging.getLogger(__name__)
 
 
+def get_system_prompt(full_desc: str, names: list[str]) -> str:
+            return f"""
+            The detective story:
+
+            {full_desc}
+
+            The user is detective.
+
+            You need to act for {", ".join(names)}.
+            The user message will start with 
+            "Message to [{"/".join(names)}]: 
+            
+            <message here>"
+            You should start your answer with 
+            "Answer from [{"/".join(names)}]:
+            
+            <answer here>". 
+            When answering, you should act like a respective person, not like an AI assistant. Speak only English.
+
+            The detective (user) knows just the setting at the beginning. He has no prior knowledge of the story. 
+            If he is saying something controversial to what was said before or what is stated in the story's settings, 
+            you should correct him. 
+
+            Act like all characters have their own private talks with the detective.
+
+            You can make up some information but you need to be consistent with it. 
+
+            When answering take into account, who knows what. If a person does not know something, 
+            it is possible to say that he doesn't know this.
+
+            """
+
+
 class Story(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=256)
@@ -77,14 +110,28 @@ class StoryCompletion(models.Model):
         """
         story_completion = await cls.objects.acreate(user=user, story=story, state="")
 
+        names = []
+
+        # iterate over agent and add their names
+
+        async for agent in story.agents():
+            names.append(agent.name)
+
+        names = [agent.name async for agent in story.agents()]
+
+        system_prompt = get_system_prompt(story.solution, names)
+
+        print(system_prompt)
+
         # add agent interactions
         async for agent in story.agents():
             agent_interaction = await AgentInteraction.objects.acreate(
                 story_completion=story_completion, agent=agent
             )
             # add system prompt initial message
+
             await AgentInteractionMessage.objects.acreate(
-                agent_interaction=agent_interaction, message=agent.prompt, role="system"
+                agent_interaction=agent_interaction, message=system_prompt, role="system"
             )
         return story_completion
 
@@ -111,12 +158,14 @@ class StoryCompletion(models.Model):
             story_completion=self, agent=agent
         )
 
+        full_message = f"Message to {agent.name}:\n\n {message}"
+
         # Craft messages for LLM
         #  We add the user's message to the messages list,
         #  because it is not saved in the database yet
         #  in case the LLM raises an exception
         messages = await agent_interaction.get_openai_object() + [
-            {"role": "user", "content": message}
+            {"role": "user", "content": full_message}
         ]
 
         # Get the agent's answer from the LLM
@@ -130,12 +179,18 @@ class StoryCompletion(models.Model):
         )
 
         # If the answer is received, add the message and the answer to the database
-        await AgentInteractionMessage.objects.acreate(
-            agent_interaction=agent_interaction, message=message, role="user"
-        )
-        await AgentInteractionMessage.objects.acreate(
-            agent_interaction=agent_interaction, message=answer, role="assistant"
-        )
+
+        async for ai in AgentInteraction.objects.filter(story_completion=self):
+            await AgentInteractionMessage.objects.acreate(
+                agent_interaction=ai,
+                message=f'Message to {agent.name}:\n\n {message}', 
+                role="user"
+            )
+            await AgentInteractionMessage.objects.acreate(
+                agent_interaction=ai,
+                message=f'Answer from {agent.name}:\n\n {answer}', 
+                role="assistant"
+            )
 
         return answer
 

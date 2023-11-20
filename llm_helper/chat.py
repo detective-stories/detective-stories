@@ -25,6 +25,7 @@ class LLMHelper:
         )
         # Iterate over the stream and append the deltas to the result
         res = ""
+        start_deleted = False
         async for item in stream:
             self.logger.debug(item)
             delta = item.choices[0].delta.content
@@ -35,9 +36,15 @@ class LLMHelper:
 
             res += delta
 
+
+            if "\n" in res and not start_deleted:
+                res = res[res.find("\n") + 1 :]
+                start_deleted = True
+
             # update the message callback
             if message_callback is not None:
-                await message_callback(res)
+                if start_deleted:
+                    await message_callback(res)
 
         self.logger.debug(f"Chat complete response: {res}")
         return res
