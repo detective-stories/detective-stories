@@ -9,7 +9,7 @@ from dtb.settings import OPENAI_TOKEN
 class LLMHelper:
     logger = logging.getLogger(__name__)
 
-    def __init__(self, model="gpt-4"):
+    def __init__(self, model="gpt-4-1106-preview"):
         self.client = openai.AsyncOpenAI(api_key=OPENAI_TOKEN)
         self.model = model
 
