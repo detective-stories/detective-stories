@@ -15,16 +15,9 @@ def run_polling(tg_token: str = TELEGRAM_TOKEN):
     app = Application.builder().token(tg_token).persistence(DictPersistence()).build()
     app = setup_event_handlers(app)
 
-    # bot_info = await Bot(tg_token).get_me()
-    # bot_link = f"https://t.me/{bot_info['username']}"
-
     print(f"Polling has started")
-    # it is really useful to send '👋' emoji to developer
-    # when you run local test
-    # bot.send_message(text='👋', chat_id=<YOUR TELEGRAM ID>)
 
     app.run_polling()
-    app.idle()
 
 
 if __name__ == "__main__":
