@@ -107,7 +107,13 @@ During a story:
 - Use /back to return to the character list or the previous step.
 - Exit the current detective story using /quit.
 
-Remember, to select your next adventure, use /list. If you want to explore available stories, try /list.
+Remember, to select your next adventure and explore available stories, use /list.
 
 The key to success is in the details! Happy sleuthing! 🔍🎩
+""".strip()
+
+unknown_command_md = """
+Sorry, I don't understand. 🤔
+
+Type /help to see the list of available commands. 🕵️‍♂️
 """.strip()

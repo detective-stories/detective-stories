@@ -36,6 +36,10 @@ async def command_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(text=static_text.help_md, parse_mode="Markdown")
 
 
+async def unknown_command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(text=static_text.unknown_command_md, parse_mode="Markdown")
+
+
 async def stories_list_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     list_stories = [story async for story in Story.objects.all()]
     keyboard = make_keyboard_for_stories_list(list_stories)
