@@ -23,6 +23,7 @@ from tgbot.handlers.storytelling.keyboards import (
     make_keyboard_for_stories_list,
     make_keyboard_for_agents_list,
 )
+from tgbot.handlers.utils.python_update_timer import TimeoutTimer
 from users.models import User
 
 global_llm_helper = LLMHelper()
@@ -162,8 +163,17 @@ async def ask_agent(context, message, update):
         parse_mode=ParseMode.HTML,
     )
 
+    # Create a timer to update the message under the telegram API rate limits (20 messages per minute per chat)
+    timeout_timer = TimeoutTimer()
+
     async def update_message(current_answer: str) -> None:
         """Update message with agent (partial) answer"""
+        is_timeout_approved = await timeout_timer.step()
+        if not is_timeout_approved:
+            # If the timeout is not approved, do not update the message
+            #  So that we don't hit the telegram API rate limit
+            return
+
         # Update message
         try:
             await placeholder_message.edit_text(
