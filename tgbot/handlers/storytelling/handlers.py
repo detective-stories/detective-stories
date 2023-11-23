@@ -1,3 +1,4 @@
+import asyncio
 import html
 import logging
 
@@ -110,15 +111,54 @@ async def agent_selected_handler(update: Update, context: ContextTypes.DEFAULT_T
 
 async def agent_answer_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message.text
+    return await ask_agent(context, message, update)
 
+
+async def agent_audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    file = await update.effective_message.voice.get_file()
+
+    # Check the file size
+    if file.file_size > 10 * 1024 * 1024:
+        await update.effective_message.reply_text(
+            text=static_text.audio_too_large_md, parse_mode="Markdown"
+        )
+        return states.TALKING_TO_AGENT
+
+    # Download the file
+    file = await update.effective_message.voice.get_file()
+    path = await file.download_to_drive()
+    try:
+        # Transcribe the audio (timeout after 60 seconds)
+        transcript = await asyncio.wait_for(global_llm_helper.transcribe_audio_file(path), timeout=60)
+
+        # delete file
+        path.unlink()
+    except Exception as e:
+        # if agent fails to transcribe, log the error and notify the user
+        logger.error(e)
+        agent = await extract_agent(update, context)
+        await update.effective_message.reply_text(
+            text=static_text.agent_failure_html.format(
+                agent_name=html.escape(agent.name)
+            ),
+            parse_mode=ParseMode.HTML,
+        )
+
+        # delete file
+        path.unlink()
+
+        return states.TALKING_TO_AGENT
+
+    return await ask_agent(context, transcript, update)
+
+
+async def ask_agent(context, message, update):
+    """Ask agent a question and display the answer"""
     agent = await extract_agent(update, context)
     story_completion = await extract_story_completion(update, context)
-
     # answer placeholder
     placeholder_message = await update.effective_message.reply_text(
-        text=static_text.agent_thinking_html.format(
-            agent_name=html.escape(agent.name)
-        ),
+        text=static_text.agent_thinking_html.format(agent_name=html.escape(agent.name)),
         parse_mode=ParseMode.HTML,
     )
 

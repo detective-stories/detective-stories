@@ -19,7 +19,7 @@ To exit the story, type /quit 🚪
 agent_selected_md = """
 You are now interrogating *🕵️‍♂️ {agent_name}*
 
-Type your message.
+Type your message or send a voice message.
 
 To return to the character list, type /back 🔙
 """.strip()
@@ -128,4 +128,8 @@ unknown_command_md = """
 Sorry, I don't understand. 🤔
 
 Type /help to see the list of available commands. 🕵️‍♂️
+""".strip()
+
+audio_too_large_md = """
+Sorry, the audio file is too large. Please send a shorter audio message. 🎤
 """.strip()
