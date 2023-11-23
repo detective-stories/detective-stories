@@ -6,6 +6,8 @@ from typing import Any, List, Callable, Coroutine, Union
 import openai
 from dtb.settings import OPENAI_TOKEN
 
+MAX_MESSAGE_LENGTH = 2048
+
 
 class LLMHelper:
     logger = logging.getLogger(__name__)
@@ -22,7 +24,10 @@ class LLMHelper:
         self.logger.info(f"Chat complete with messages: {messages}")
         # Create a stream from OpenAI API
         stream = await self.client.chat.completions.create(
-            messages=messages, model=self.model, stream=True
+            messages=messages,
+            model=self.model,
+            stream=True,
+            max_tokens=MAX_MESSAGE_LENGTH,
         )
         # Iterate over the stream and append the deltas to the result
         res = ""
