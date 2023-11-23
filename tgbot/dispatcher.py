@@ -49,6 +49,10 @@ def setup_event_handlers(dp):
                         filters.TEXT & ~filters.COMMAND,
                         storytelling_handlers.agent_answer_handler,
                     ),
+                    MessageHandler(
+                        filters.VOICE,
+                        storytelling_handlers.agent_audio_handler,
+                    ),
                 ],
                 storytelling_handlers.states.TYPING_VERDICT: [
                     MessageHandler(

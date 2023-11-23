@@ -1,6 +1,7 @@
 import logging
 import os
-from typing import Any, List, Callable, Coroutine
+from pathlib import Path
+from typing import Any, List, Callable, Coroutine, Union
 
 import openai
 from dtb.settings import OPENAI_TOKEN
@@ -59,3 +60,12 @@ class LLMHelper:
         )
         res = chat_completion.choices[0].message.content.strip()
         return res == "1"
+
+    async def transcribe_audio_file(self, path: Union[Path, str]) -> str:
+        """Transcribe an audio file using OpenAI API and return the text"""
+        with open(path, "rb") as f:
+            transcript = await self.client.audio.transcriptions.create(
+                model="whisper-1", file=f, response_format="text"
+            )
+        self.logger.debug(f"Transcription from {path}: {transcript}")
+        return transcript.strip()
