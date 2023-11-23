@@ -26,8 +26,6 @@ def setup_event_handlers(dp):
     # help
     dp.add_handler(CommandHandler("help", storytelling_handlers.command_help))
 
-    # stories list
-    dp.add_handler(CommandHandler("list", storytelling_handlers.stories_list_handler))
 
     # story conversation handler
     dp.add_handler(
@@ -75,6 +73,9 @@ def setup_event_handlers(dp):
             name="storytelling",
         )
     )
+
+    # stories list
+    dp.add_handler(CommandHandler("list", storytelling_handlers.stories_list_handler))
 
     # Handle all other messages
     dp.add_handler(
