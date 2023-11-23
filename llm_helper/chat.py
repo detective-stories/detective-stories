@@ -36,7 +36,6 @@ class LLMHelper:
 
             res += delta
 
-
             if "\n" in res and not start_deleted:
                 res = res[res.find("\n") + 1 :]
                 start_deleted = True
@@ -52,11 +51,11 @@ class LLMHelper:
     comparison_system_prompt = (
 """
 Your task is to compare player's verdict and author's verdict. You need to check that player's verdict is correct.
-Also you need to make sure that player realy solved the mystery and got all details right. Players verdict is
+Also you need to make sure that player really solved the mystery and got all details right. Players verdict is
 first one, author's is second one. Output how close the two sentences are semantically, on a scale from 0 to 10.
-If player did't get some detail his score should be lower. If he added some wrong details his score should be lower.
-Try to estimate what ratio of story is revieled by the player. If he revieled 50% of story his score should be 5.
-Your output will be processed automatically. First line should be score (ineger number from 0 to 10), 
+If player didn't get some detail his score should be lower. If he added some wrong details his score should be lower.
+Try to estimate what ratio of story is revealed by the player. If he revealed 50% of story his score should be 5.
+Your output will be processed automatically. First line should be score (integer number from 0 to 10),
 second line should be hint. Hint should direct player in right direction, but not give him the answer.
 """
     ).strip()
