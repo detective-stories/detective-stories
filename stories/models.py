@@ -206,12 +206,13 @@ class StoryCompletion(models.Model):
 
     async def complete(
         self, prediction: str, solution: str, prelude: str, llm_helper: LLMHelper
-    ) -> Tuple[bool, int, str]:
+    ) -> Tuple[bool, bool, bool, bool, str]:
         """Completes a story by checking if the prediction matches the solution.
 
         Args:
             prediction (str): The predicted solution for the story.
             solution (str): The actual solution for the story.
+            prelude (str): The prelude that was given to the player.
             llm_helper (LLMHelper): An instance of the LLMHelper class.
 
         Returns:
@@ -221,15 +222,15 @@ class StoryCompletion(models.Model):
                 - hint (str): A hint or feedback related to the completion.
         """
         self.check_completed()
-        score, hint = await llm_helper.is_solved(prediction, solution, prelude)
-        is_solved = score == 3
+        score_person, score_motive, score_way, hint = await llm_helper.is_solved(prediction, solution, prelude)
+        is_solved = score_person and score_motive and score_way
         if is_solved:
             self.score = 1
             self.completed_at = timezone.now()
         else:
             self.score = 0
         await self.asave()
-        return is_solved, score, hint
+        return is_solved, score_person, score_motive, score_way, hint
 
     def check_completed(self):
         if self.completed_at is not None:

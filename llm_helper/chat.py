@@ -56,39 +56,74 @@ class LLMHelper:
 
     comparison_system_prompt = (
 """
-Your task is to compare player's verdict and author's verdict. You need to check that player's verdict is correct.
-Also you need to make sure that player really solved the mystery and got all details right. 
+You need to assess how player solved the mystery.
 There are three components that player should get right: person(s) who is guilty, motive and the way the crime was committed.
 In case there are no guilty persons, first component requires to identify that there are no guilty persons.
 You should estimate each component separately. For each component write 1 if player got it right and 0 otherwise.
-Examples of your output:
-1
-0
-0
+Output format:
+<score_person> - are guilty persons identified correctly?
+<score_motive> - is the motive identified correctly?
+<score_way> - is the way the crime was committed identified correctly?
+<hint>: some additional information about the case. Do not show the answer to the player, but give some hints.
+Examples of interation:
+====================
+input:
+<ground truth>
+<prelude that was given to the player>
+Bob killed the victim.
+output:
+Person(s): 1
+Motive: 0
+Way: 0
 You identified the killer correctly, but you missed the motive and the way the crime was committed.
 ====================
-0
-1
-0
-You identified the motive correctly, but you missed the thief and the way the crime was committed.
+input:
+<ground truth>
+<prelude that was given to the player>
+Bob killed the victim using a knife.
+output:
+Person(s): 1
+Motive: 0
+Way: 0
+You identified the killer correctly, but you missed the motive and
+way the crime was committed is not correct.
 ====================
-1
-1
-1
-You identified the robber, the motive and the way the crime was committed correctly.
+input:
+<ground truth>
+<prelude that was given to the player>
+Alice was a thief - money was stolen from the victim.
+output:
+Person(s): 0
+Motive: 0
+Way: 1
+You identified the way the crime was committed correctly, but you missed the guilty person and the motive.
 ====================
-1
-1
-1
-You correctly identified that this was just an accident, not a crime.
+input:
+<ground truth>
+<prelude that was given to the player>
+Carl robbed the bank. He did it anole with a fake gun. He did it because he needed money.
+output:
+Person(s): 1
+Motive: 1
+Way: 1
+You identified the killer, the motive and the way the crime was committed correctly.
+====================
+
+Other combinations of these components are possible.
+Your output will be processed automatically, so please follow the format - don't add any additional characters.
 """
     ).strip()
 
-    async def is_solved(self, player_answer: str, ground_truth: str, prelude: str) -> tuple[int, str]:
+    async def is_solved(self, player_answer: str, ground_truth: str, prelude: str) -> tuple[bool, bool, bool, str]:
         text = f"""
-What was given to the player as the prelude: {prelude}
-What player discovered during the game: {player_answer}
-What was the truth: {ground_truth}"""
+**What was the truth - solution of the story given by the auther, player needs to reveal it**:
+{ground_truth}
+==============================================================
+**What was given to the player as the prelude when game started**:
+{prelude}
+==============================================================
+**What player discovered during the game (you need to estimate only this part)**:
+{player_answer}"""
         chat_completion = await self.client.chat.completions.create(
             messages=[
                 {"role": "system", "content": self.comparison_system_prompt},
@@ -96,11 +131,18 @@ What was the truth: {ground_truth}"""
             ],
             model=self.model,
         )
+        print(self.comparison_system_prompt)
+        print('====================')
+        print(text)
         res = chat_completion.choices[0].message.content.strip()
+        print('====================')
+        print(res)
 
         score_person, score_motive, score_way, hint = res.split("\n")
-        score = int(score_person) + int(score_motive) + int(score_way)
-        return score, hint
+        score_person = score_person.split(":")[1].strip() == "1"
+        score_motive = score_motive.split(":")[1].strip() == "1"
+        score_way = score_way.split(":")[1].strip() == "1"
+        return score_person, score_motive, score_way, hint
 
     async def transcribe_audio_file(self, path: Union[Path, str]) -> str:
         """Transcribe an audio file using OpenAI API and return the text"""

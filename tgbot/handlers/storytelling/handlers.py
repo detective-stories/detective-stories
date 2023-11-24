@@ -266,13 +266,17 @@ async def verdict_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     story_completion = await extract_story_completion(update, context)
 
-    is_solved, score, hint = await story_completion.complete(
+    is_solved, score_person, score_motive, score_way, hint = await story_completion.complete(
         player_verdict, authors_verdict, story.description, global_llm_helper
     )
+    score_person = static_text.correct if score_person else static_text.incorrect
+    score_motive = static_text.correct if score_motive else static_text.incorrect
+    score_way = static_text.correct if score_way else static_text.incorrect
     await update.effective_message.reply_text(
-        text=static_text.verdict_succes.format(score=score)
+        text=static_text.verdict_succes.format(person=score_person, motivation=score_motive, way=score_way)
         if is_solved
-        else static_text.verdict_failure.format(score=score, hint=hint),
+        else static_text.verdict_failure.format(person=score_person, motivation=score_motive, way=score_way,
+                                                hint=hint),
         parse_mode="Markdown",
     )
     if is_solved:

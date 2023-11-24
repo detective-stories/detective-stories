@@ -71,17 +71,23 @@ Thank you for playing! 🎉
 """.strip()
 
 verdict_succes = """
-The system decided that your score is *{score}*/10 🧐.
+The system asses your answer:
+
+Person(s): {person}
+Motivation: {motivation}
+Way how crime was committed: {way}
 
 The story is complete! 🎉🎉🎉
 """
 
 verdict_failure = """
-The system decided that your score is *{score}*/10 🧐.
+The system asses your answer:
 
-Hint: {hint}
+Person(s): {person}
+Motivation: {motivation}
+Way how crime was committed: {way}
 
-Continue with your investigation, or use /quit to exit the game.
+The story is not complete. 🤔
 """
 
 quit_md = """
