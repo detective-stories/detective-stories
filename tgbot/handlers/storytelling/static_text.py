@@ -70,6 +70,18 @@ The system has decided that your solution is *{correctness}* 🧐.
 Thank you for playing! 🎉
 """.strip()
 
+verdict_succes = """
+The system decided that your score is *{score}*/10 🧐.
+
+The story is complete! 🎉🎉🎉
+"""
+
+verdict_failure = """
+The system decided that your score is *{score}*/10 🧐.
+
+Hint from the system: {hint}
+"""
+
 quit_md = """
 You have exited the mystery. 🚪🔍
 """.strip()

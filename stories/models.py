@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from typing import Callable, Coroutine, Any
+from os import linesep
 
 from django.db import models
 from django.utils import timezone
@@ -11,6 +12,45 @@ from llm_helper.chat import LLMHelper
 from users.models import User
 
 logger = logging.getLogger(__name__)
+
+
+def get_system_prompt(full_desc: str, names: list[str], descriptions: list[str]) -> str:
+            return f"""
+The detective story:
+
+{full_desc}
+
+Characters for this story are 
+{
+    (linesep + linesep).join([
+        f"{name}: {desc}" for name, desc in zip(names, descriptions)
+    ])
+}
+
+The user is detective.
+
+You need to act for {", ".join(names)}.
+The user message will start with 
+"Message to [{"/".join(names)}]: 
+
+<message here>"
+You should start your answer with 
+"Answer from [{"/".join(names)}]:
+
+<answer here>". 
+When answering, you should act like a respective person, not like an AI assistant. Speak only English.
+
+The detective (user) knows just the setting at the beginning. He has no prior knowledge of the story. 
+If he is saying something controversial to what was said before or what is stated in the story's settings, 
+you should correct him. 
+
+Act like all characters have their own private talks with the detective.
+
+You can make up some information but you need to be consistent with it. 
+
+When answering take into account, who knows what. If a person does not know something, 
+it is possible to say that he doesn't know this.
+            """
 
 
 class Story(models.Model):
@@ -77,14 +117,23 @@ class StoryCompletion(models.Model):
         """
         story_completion = await cls.objects.acreate(user=user, story=story, state="")
 
+        names = [agent.name async for agent in story.agents()]
+
+        descriptions = [agent.prompt async for agent in story.agents()]
+
+        system_prompt = get_system_prompt(story.solution, names, descriptions)
+
+        print(system_prompt)
+
         # add agent interactions
         async for agent in story.agents():
             agent_interaction = await AgentInteraction.objects.acreate(
                 story_completion=story_completion, agent=agent
             )
             # add system prompt initial message
+
             await AgentInteractionMessage.objects.acreate(
-                agent_interaction=agent_interaction, message=agent.prompt, role="system"
+                agent_interaction=agent_interaction, message=system_prompt, role="system"
             )
         return story_completion
 
@@ -111,12 +160,14 @@ class StoryCompletion(models.Model):
             story_completion=self, agent=agent
         )
 
+        full_message = f"Message to {agent.name}:\n\n {message}"
+
         # Craft messages for LLM
         #  We add the user's message to the messages list,
         #  because it is not saved in the database yet
         #  in case the LLM raises an exception
         messages = await agent_interaction.get_openai_object() + [
-            {"role": "user", "content": message}
+            {"role": "user", "content": full_message}
         ]
 
         # Get the agent's answer from the LLM
@@ -130,12 +181,18 @@ class StoryCompletion(models.Model):
         )
 
         # If the answer is received, add the message and the answer to the database
-        await AgentInteractionMessage.objects.acreate(
-            agent_interaction=agent_interaction, message=message, role="user"
-        )
-        await AgentInteractionMessage.objects.acreate(
-            agent_interaction=agent_interaction, message=answer, role="assistant"
-        )
+
+        async for ai in AgentInteraction.objects.filter(story_completion=self):
+            await AgentInteractionMessage.objects.acreate(
+                agent_interaction=ai,
+                message=f'Message to {agent.name}:\n\n {message}', 
+                role="user"
+            )
+            await AgentInteractionMessage.objects.acreate(
+                agent_interaction=ai,
+                message=f'Answer from {agent.name}:\n\n {answer}', 
+                role="assistant"
+            )
 
         return answer
 
@@ -148,16 +205,17 @@ class StoryCompletion(models.Model):
 
     async def complete(
         self, prediction: str, solution: str, llm_helper: LLMHelper
-    ) -> bool:
+    ) -> tuple[bool, str]:
         self.check_completed()
-        is_solved = await llm_helper.is_solved(prediction, solution)
+        score, hint = await llm_helper.is_solved(prediction, solution)
+        is_solved = score >= 10
         if is_solved:
             self.score = 1
+            self.completed_at = timezone.now()
         else:
             self.score = 0
-        self.completed_at = timezone.now()
         await self.asave()
-        return is_solved
+        return is_solved, score, hint
 
     def check_completed(self):
         if self.completed_at is not None:

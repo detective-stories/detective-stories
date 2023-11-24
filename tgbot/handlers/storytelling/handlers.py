@@ -230,20 +230,18 @@ async def verdict_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     story_completion = await extract_story_completion(update, context)
 
-    is_correct = await story_completion.complete(
+    is_solved, score, hint = await story_completion.complete(
         player_verdict, authors_verdict, global_llm_helper
     )
     await update.effective_message.reply_text(
-        text=static_text.verdict_md.format(
-            player_verdict=escape_markdown(player_verdict, version=1),
-            system_verdict=escape_markdown(authors_verdict, version=1),
-            correctness=escape_markdown(
-                static_text.correct if is_correct else static_text.incorrect, version=1
-            ),
-        ),
+        text=static_text.verdict_succes.format(score=score) 
+        if is_solved else static_text.verdict_failure.format(score=score, hint=hint),
         parse_mode="Markdown",
     )
-    return ConversationHandler.END
+    if is_solved:
+        return ConversationHandler.END
+    else:
+        return states.IN_QUESTIONING_LOBBY
 
 
 async def back_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
