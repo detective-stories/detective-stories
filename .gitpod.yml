@@ -10,6 +10,6 @@ ports:
 
 tasks:
   - name: Django Admin
-    before: pip3 install -r requirements.txt && cp .env.example .env
+    before: pip3 install -r requirements.txt && cp .env_example .env
     init: python3 manage.py migrate
     command: python3 manage.py runserver
