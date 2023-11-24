@@ -23,3 +23,5 @@ jobs:
           dokku-host: ${{ secrets.DOKKU_HOST }}
           app-name: 'dtb'
           git-push-flags: '--force'
+    concurrency:
+      group: dokku
