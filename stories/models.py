@@ -222,7 +222,7 @@ class StoryCompletion(models.Model):
         """
         self.check_completed()
         score, hint = await llm_helper.is_solved(prediction, solution, prelude)
-        is_solved = score >= 10
+        is_solved = score == 3
         if is_solved:
             self.score = 1
             self.completed_at = timezone.now()

@@ -57,18 +57,30 @@ class LLMHelper:
     comparison_system_prompt = (
 """
 Your task is to compare player's verdict and author's verdict. You need to check that player's verdict is correct.
-Also you need to make sure that player really solved the mystery and got all details right. Players verdict is
-first one, author's is second one. Output how close the two sentences are semantically, on a scale from 0 to 10.
-If player didn't get some detail his score should be lower. If he added some wrong details his score should be lower.
-Try to estimate what ratio of story is revealed by the player. If he revealed 50% of story his score should be 5.
-Your output will be processed automatically. First line should be score (integer number from 0 to 10),
-second line should be hint. Hint should direct player in right direction, but not give him the answer.
-Examples of output:
-5
-You identified the killer correctly, but you missed the motive.
+Also you need to make sure that player really solved the mystery and got all details right. 
+There are three components that player should get right: person(s) who is guilty, motive and the way the crime was committed.
+In case there are no guilty persons, first component requires to identify that there are no guilty persons.
+You should estimate each component separately. For each component write 1 if player got it right and 0 otherwise.
+Examples of your output:
+1
+0
+0
+You identified the killer correctly, but you missed the motive and the way the crime was committed.
 ====================
-8
-You identified the killer and the motive correctly. However, the way you described how the crime was committed was not accurate.
+0
+1
+0
+You identified the motive correctly, but you missed the thief and the way the crime was committed.
+====================
+1
+1
+1
+You identified the robber, the motive and the way the crime was committed correctly.
+====================
+1
+1
+1
+You correctly identified that this was just an accident, not a crime.
 """
     ).strip()
 
@@ -76,8 +88,7 @@ You identified the killer and the motive correctly. However, the way you describ
         text = f"""
 What was given to the player as the prelude: {prelude}
 What player discovered during the game: {player_answer}
-What was the truth: {ground_truth}
-Estimate what ratio of story is revealed by the player."""
+What was the truth: {ground_truth}"""
         chat_completion = await self.client.chat.completions.create(
             messages=[
                 {"role": "system", "content": self.comparison_system_prompt},
@@ -87,9 +98,8 @@ Estimate what ratio of story is revealed by the player."""
         )
         res = chat_completion.choices[0].message.content.strip()
 
-        print("OUTPUT FROM LLM: ", res, "=" * 100)
-        score, hint = res.split("\n")
-        score = int(score)
+        score_person, score_motive, score_way, hint = res.split("\n")
+        score = int(score_person) + int(score_motive) + int(score_way)
         return score, hint
 
     async def transcribe_audio_file(self, path: Union[Path, str]) -> str:
