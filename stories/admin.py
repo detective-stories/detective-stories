@@ -15,7 +15,7 @@ class StoryAdmin(admin.ModelAdmin):
         "id",
         "title",
         "description",
-        "cover_prompt",
+        "cover_image_url",
         "solution",
         "created_at",
         "updated_at",
