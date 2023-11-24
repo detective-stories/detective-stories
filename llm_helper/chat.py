@@ -61,16 +61,16 @@ There are three components that player should get right: person(s) who is guilty
 In case there are no guilty persons, first component requires to identify that there are no guilty persons.
 You should estimate each component separately. For each component write 1 if player got it right and 0 otherwise.
 Output format:
-<score_person> - are guilty persons identified correctly?
+<score_person> - are guilty persons identified correctly? Player should write names of guilty persons.
 <score_motive> - is the motive identified correctly?
 <score_way> - is the way the crime was committed identified correctly?
 <hint>: some additional information about the case. Do not show the answer to the player, but give some hints.
-Examples of interation:
+Examples of interation (examples for different cases, stories are different for this examples):
 ====================
 input:
 <ground truth>
 <prelude that was given to the player>
-Bob killed the victim.
+player decision: Bob killed the victim.
 output:
 Person(s): 1
 Motive: 0
@@ -80,7 +80,7 @@ You identified the killer correctly, but you missed the motive and the way the c
 input:
 <ground truth>
 <prelude that was given to the player>
-Bob killed the victim using a knife.
+player decision: Bob killed the victim using a knife.
 output:
 Person(s): 1
 Motive: 0
@@ -91,7 +91,7 @@ way the crime was committed is not correct.
 input:
 <ground truth>
 <prelude that was given to the player>
-Alice was a thief - money was stolen from the victim.
+player decision: Alice was a thief - money was stolen from the victim.
 output:
 Person(s): 0
 Motive: 0
@@ -101,12 +101,32 @@ You identified the way the crime was committed correctly, but you missed the gui
 input:
 <ground truth>
 <prelude that was given to the player>
-Carl robbed the bank. He did it anole with a fake gun. He did it because he needed money.
+player decision: Carl robbed the bank. He did it anole with a fake gun. He did it because he needed money.
 output:
 Person(s): 1
 Motive: 1
 Way: 1
 You identified the killer, the motive and the way the crime was committed correctly.
+====================
+input:
+<ground truth>
+<prelude that was given to the player>
+player decision: Carl robbed the bank. He did it anole with a fake gun. He did it because he needed money.
+output:
+Person(s): 0
+Motive: 1
+Way: 1
+You identified the motive and the way the crime was committed correctly, but you missed the guilty person - this is another person, not Carl.
+====================
+input:
+<ground truth>
+<prelude that was given to the player>
+player decision: Someone robbed the bank. He did it anole with a fake gun. He did it because he needed money.
+output:
+Person(s): 0
+Motive: 1
+Way: 1
+You identified the motive and the way the crime was committed correctly, but you did not stated the guilty person. 
 ====================
 
 Other combinations of these components are possible.
