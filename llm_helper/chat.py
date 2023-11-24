@@ -128,6 +128,16 @@ Motive: 1
 Way: 1
 You identified the motive and the way the crime was committed correctly, but you did not stated the guilty person. 
 ====================
+input:
+<ground truth>
+<prelude that was given to the player>
+player decision: He robbed the bank. He did it alone with a fake gun. He did it because he needed money.
+output:
+Person(s): 0
+Motive: 1
+Way: 1
+You identified the motive and the way the crime was committed correctly, but you did not stated the guilty person. Who is he? you need to state the name of the guilty person.
+====================
 
 Other combinations of these components are possible.
 Your output will be processed automatically, so please follow the format - don't add any additional characters.
