@@ -63,6 +63,12 @@ If player didn't get some detail his score should be lower. If he added some wro
 Try to estimate what ratio of story is revealed by the player. If he revealed 50% of story his score should be 5.
 Your output will be processed automatically. First line should be score (integer number from 0 to 10),
 second line should be hint. Hint should direct player in right direction, but not give him the answer.
+Examples of output:
+5
+You identified the killer correctly, but you missed the motive.
+====================
+8
+You identified the killer and the motive correctly. However, the way you described how the crime was committed was not accurate.
 """
     ).strip()
 
