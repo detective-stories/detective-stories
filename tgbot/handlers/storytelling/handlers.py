@@ -42,6 +42,10 @@ async def unknown_command_handler(update: Update, context: ContextTypes.DEFAULT_
     await update.message.reply_text(text=static_text.unknown_command_md, parse_mode="Markdown")
 
 
+async def unknown_callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.callback_query.answer(text=static_text.unknown_callback)
+
+
 async def stories_list_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     list_stories = [story async for story in Story.objects.all()]
     keyboard = make_keyboard_for_stories_list(list_stories)
@@ -234,14 +238,14 @@ async def verdict_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         player_verdict, authors_verdict, global_llm_helper
     )
     await update.effective_message.reply_text(
-        text=static_text.verdict_succes.format(score=score) 
+        text=static_text.verdict_succes.format(score=score)
         if is_solved else static_text.verdict_failure.format(score=score, hint=hint),
         parse_mode="Markdown",
     )
     if is_solved:
         return ConversationHandler.END
     else:
-        return states.IN_QUESTIONING_LOBBY
+        return await questioning_lobby_handler(update, context)
 
 
 async def back_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
