@@ -88,6 +88,7 @@ Motivation: {motivation}
 Way how crime was committed: {way}
 
 The story is not complete. 🤔
+Hint: {hint}
 """
 
 quit_md = """
