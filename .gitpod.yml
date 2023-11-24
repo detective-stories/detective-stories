@@ -1,0 +1,15 @@
+image: gitpod/workspace-python-3.12
+
+vscode:
+  extensions:
+    - ms-python.python
+
+ports:
+  - port: 8000
+    onOpen: open-preview
+
+tasks:
+  - name: Django Admin
+    init: pip3 install -r requirements.txt && cp .env.example .env
+    before: python3 manage.py migrate
+    command: python3 manage.py runserver
