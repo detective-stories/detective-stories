@@ -10,6 +10,7 @@ Detective Story Bot: Interactive detective mysteries powered by AI
 
 [![build status](https://img.shields.io/github/actions/workflow/status/waleko/detective-stories/dokku.yml?style=flat-square)](https://github.com/waleko/detective-stories/actions/workflows/dokku.yml)
 [![Static Badge](https://img.shields.io/badge/bot-active-blue?style=flat-square&logo=telegram)](https://t.me/detective_stories_bot)
+[![Open in Gitpod](https://img.shields.io/badge/Gitpod-ready--to--code-white?style=flat-square&logo=gitpod)](https://gitpod.io/#https://github.com/detective-stories/detective-stories/tree/main)
 
 ## Features
 
