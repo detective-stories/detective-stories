@@ -206,7 +206,7 @@ class StoryCompletion(models.Model):
         await self.asave()
 
     async def complete(
-        self, prediction: str, solution: str, llm_helper: LLMHelper
+        self, prediction: str, solution: str, prelude: str, llm_helper: LLMHelper
     ) -> Tuple[bool, int, str]:
         """Completes a story by checking if the prediction matches the solution.
 
@@ -222,7 +222,7 @@ class StoryCompletion(models.Model):
                 - hint (str): A hint or feedback related to the completion.
         """
         self.check_completed()
-        score, hint = await llm_helper.is_solved(prediction, solution)
+        score, hint = await llm_helper.is_solved(prediction, solution, prelude)
         is_solved = score >= 10
         if is_solved:
             self.score = 1

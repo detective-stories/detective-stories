@@ -66,8 +66,12 @@ second line should be hint. Hint should direct player in right direction, but no
 """
     ).strip()
 
-    async def is_solved(self, player_answer: str, ground_truth: str) -> tuple[int, str]:
-        text = f"{player_answer}###{ground_truth}"
+    async def is_solved(self, player_answer: str, ground_truth: str, prelude: str) -> tuple[int, str]:
+        text = f"""
+What was given to the player as the prelude: {prelude}
+What player discovered during the game: {player_answer}
+What was the truth: {ground_truth}
+Estimate what ratio of story is revealed by the player."""
         chat_completion = await self.client.chat.completions.create(
             messages=[
                 {"role": "system", "content": self.comparison_system_prompt},

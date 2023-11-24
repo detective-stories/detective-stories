@@ -235,7 +235,7 @@ async def verdict_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     story_completion = await extract_story_completion(update, context)
 
     is_solved, score, hint = await story_completion.complete(
-        player_verdict, authors_verdict, global_llm_helper
+        player_verdict, authors_verdict, story.description, global_llm_helper
     )
     await update.effective_message.reply_text(
         text=static_text.verdict_succes.format(score=score)
