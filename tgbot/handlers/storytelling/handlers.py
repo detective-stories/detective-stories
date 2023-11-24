@@ -39,7 +39,9 @@ async def command_help(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def unknown_command_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(text=static_text.unknown_command_md, parse_mode="Markdown")
+    await update.message.reply_text(
+        text=static_text.unknown_command_md, parse_mode="Markdown"
+    )
 
 
 async def unknown_callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -69,15 +71,43 @@ async def story_start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
     story_completion = await StoryCompletion.start_story(user, story)
     await set_story_completion(update, context, story_completion)
 
-    await update.effective_message.reply_text(
-        parse_mode="Markdown",
-        text=static_text.story_start_md.format(
-            title=escape_markdown(story.title, version=1),
-            description=story.description,
-            version=1,
-        ),
+    full_text = static_text.story_start_md.format(
+        title=escape_markdown(story.title, version=1),
+        description=story.description,
+        version=1,
     )
-    # linked for now, but can be changed later for progression of the story
+
+    # Send the story start message: description + optional cover image
+    if story.cover_image_url is None:
+        # If there is no cover image, send the text as is
+        await update.effective_message.reply_text(
+            parse_mode="Markdown",
+            text=full_text,
+        )
+    else:
+        # If there is a cover image, send the text as caption to the image
+        if len(full_text) >= 1000:
+            # If the text is too long, send it as a separate message (1024 chars limit)
+            photo_message = await update.effective_message.reply_photo(
+                photo=story.cover_image_url,
+                caption=escape_markdown(story.title, version=1),
+                parse_mode="Markdown"
+            )
+            # Send the rest of the text as a separate message
+            await photo_message.reply_text(
+                parse_mode="Markdown",
+                text=full_text,
+            )
+        else:
+            # If the text is short enough, send it as a caption to the image
+            await update.effective_message.reply_photo(
+                photo=story.cover_image_url,
+                caption=full_text,
+                parse_mode="Markdown",
+            )
+
+    # Proceed to the questioning lobby
+    #  linked for now, but can be changed later for progression of the story
     return await questioning_lobby_handler(update, context)
 
 
@@ -134,7 +164,9 @@ async def agent_audio_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
     path = await file.download_to_drive()
     try:
         # Transcribe the audio (timeout after 60 seconds)
-        transcript = await asyncio.wait_for(global_llm_helper.transcribe_audio_file(path), timeout=60)
+        transcript = await asyncio.wait_for(
+            global_llm_helper.transcribe_audio_file(path), timeout=60
+        )
 
         # delete file
         path.unlink()
@@ -239,7 +271,8 @@ async def verdict_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.effective_message.reply_text(
         text=static_text.verdict_succes.format(score=score)
-        if is_solved else static_text.verdict_failure.format(score=score, hint=hint),
+        if is_solved
+        else static_text.verdict_failure.format(score=score, hint=hint),
         parse_mode="Markdown",
     )
     if is_solved:

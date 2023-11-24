@@ -57,9 +57,8 @@ class Story(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=256)
     description = models.TextField()  # story description
-    cover_prompt = models.CharField(
-        max_length=1024
-    )  # prompt for the cover image that will be shown with the story
+    # Cover image URL (will be shown in the story description)
+    cover_image_url = models.URLField(null=True, blank=True)
     solution = (
         models.TextField()
     )  # story solution that will be shown after the story is solved
