@@ -5,6 +5,7 @@ import os
 from django.core.asgi import get_asgi_application
 
 from dtb.app_holder import AppHolder
+from tgbot.system_commands import set_up_commands
 from tgbot.user_update_processor import UserUpdateProcessor
 
 # this is required for Django to work properly
@@ -35,6 +36,7 @@ ptb_application = (
     .concurrent_updates(UserUpdateProcessor())
     .updater(None)
     .persistence(persistence)
+    .post_init(set_up_commands)
     .build()
 )
 setup_event_handlers(ptb_application)

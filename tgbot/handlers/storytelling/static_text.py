@@ -21,7 +21,7 @@ You are now interrogating *🕵️‍♂️ {agent_name}*
 
 Type your message or send a voice message.
 
-To return to the character list, type /back 🔙
+To return to the characters list, type /back 🔙
 """.strip()
 
 agent_partial_answer_html = """
@@ -79,7 +79,9 @@ The story is complete! 🎉🎉🎉
 verdict_failure = """
 The system decided that your score is *{score}*/10 🧐.
 
-Hint from the system: {hint}
+Hint: {hint}
+
+Continue with your investigation, or use /quit to exit the game.
 """
 
 quit_md = """
@@ -133,3 +135,7 @@ Type /help to see the list of available commands. 🕵️‍♂️
 audio_too_large_md = """
 Sorry, the audio file is too large. Please send a shorter audio message. 🎤
 """.strip()
+
+unknown_callback = """
+❌ Sorry, this button is no longer available. 🤔
+"""

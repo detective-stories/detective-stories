@@ -26,8 +26,7 @@ def setup_event_handlers(dp):
     # help
     dp.add_handler(CommandHandler("help", storytelling_handlers.command_help))
 
-
-    # story conversation handler
+    # Story conversation handler
     dp.add_handler(
         ConversationHandler(
             entry_points=[
@@ -82,9 +81,13 @@ def setup_event_handlers(dp):
         MessageHandler(filters.TEXT, storytelling_handlers.unknown_command_handler),
     )
 
+    # Handler for unknown callback queries
+    dp.add_handler(
+        CallbackQueryHandler(storytelling_handlers.unknown_callback_handler)
+    )
+
     # handling errors
     dp.add_error_handler(error.send_stacktrace_to_tg_chat)
-    set_up_commands(bot)
 
     return dp
 
