@@ -61,7 +61,7 @@ There are three components that player should get right: person(s) who is guilty
 In case there are no guilty persons, first component requires to identify that there are no guilty persons.
 You should estimate each component separately. For each component write 1 if player got it right and 0 otherwise.
 Output format:
-<score_person> - are guilty persons identified correctly? Player should write names of guilty persons.
+<score_person> - are guilty persons identified correctly? Player should write names of guilty persons. Make sure that player clearly stated the names of guilty persons.
 <score_motive> - is the motive identified correctly?
 <score_way> - is the way the crime was committed identified correctly?
 <hint>: some additional information about the case. Do not show the answer to the player, but give some hints.
@@ -168,7 +168,10 @@ Your output will be processed automatically, so please follow the format - don't
         print('====================')
         print(res)
 
-        score_person, score_motive, score_way, hint = res.split("\n")
+        lines = res.split("\n")
+
+        score_person, score_motive, score_way = lines[0], lines[1], lines[2]
+        hint = lines[-1]
         score_person = score_person.split(":")[1].strip() == "1"
         score_motive = score_motive.split(":")[1].strip() == "1"
         score_way = score_way.split(":")[1].strip() == "1"
