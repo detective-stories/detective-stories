@@ -49,10 +49,10 @@ class LLMHelper:
             # update the message callback
             if message_callback is not None:
                 if start_deleted:
-                    await message_callback(res)
+                    await message_callback(res.strip())
 
         self.logger.debug(f"Chat complete response: {res}")
-        return res
+        return res.strip()
 
     comparison_system_prompt = (
 """
