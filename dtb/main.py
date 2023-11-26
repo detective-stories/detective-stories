@@ -36,7 +36,6 @@ ptb_application = (
     .concurrent_updates(UserUpdateProcessor())
     .updater(None)
     .persistence(persistence)
-    .post_init(set_up_commands)
     .build()
 )
 setup_event_handlers(ptb_application)
@@ -55,6 +54,9 @@ async def main() -> None:
             host="0.0.0.0",
         )
     )
+
+    # Set up commands
+    await set_up_commands(ptb_application)
 
     # Run application and webserver together
     async with ptb_application:

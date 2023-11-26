@@ -41,11 +41,12 @@ async def set_up_commands(application: Application) -> None:
         },
     }
 
-    await bot_instance.delete_my_commands()
     for language_code in langs_with_commands:
+        await bot_instance.delete_my_commands(language_code=language_code)
         await bot_instance.set_my_commands(
             language_code=language_code,
             commands=[
-                BotCommand(command, description) for command, description in langs_with_commands[language_code].items()
-            ]
+                BotCommand(command, description)
+                for command, description in langs_with_commands[language_code].items()
+            ],
         )
