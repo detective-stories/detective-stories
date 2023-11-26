@@ -141,6 +141,10 @@ You identified the motive and the way the crime was committed correctly, but you
 
 Other combinations of these components are possible.
 Your output will be processed automatically, so please follow the format - don't add any additional characters.
+
+Be not so strict. Player should find all details, he should be correct in general.
+
+Also, do not reveal the ground truth to the player, but give some hints - in what direction he should look for the solution.
 """
     ).strip()
 
