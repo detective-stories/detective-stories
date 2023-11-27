@@ -20,12 +20,8 @@ The detective story:
 
 {full_desc}
 
-Characters for this story are
-{
-    (linesep + linesep).join([
-        f"{desc}" for desc in agent_descriptions
-    ])
-}
+Characters for this story are:
+{ (linesep + linesep).join(agent_descriptions) }
 
 The characters are defined in the following format:
 "
