@@ -17,11 +17,10 @@ logger = logging.getLogger(__name__)
 def get_system_prompt(full_desc: str, names: list[str], agent_descriptions: list[str]) -> str:
     return f"""
 The detective story:
-
 {full_desc}
 
 Characters for this story are:
-{ (linesep + linesep).join(agent_descriptions) }
+{(linesep + linesep).join(agent_descriptions)}
 
 The characters are defined in the following format:
 "
@@ -46,7 +45,8 @@ Message to [{"/".join(names)}]:
 ", where "<message>" is a placeholder for a message and "[...]" represents on of the names from the list
 
 Here is a format in which you should respond:
-"Answer from [{"/".join(names)}]:
+"
+Answer from [{"/".join(names)}]:
 
 <answer>
 ", where "<answer>" is a placeholder for an answer and "[...]" represents on of the names from the list
@@ -66,6 +66,47 @@ You can make up some information but you need to be consistent with it.
 
 When answering, take into account, who knows what. If a person does not know something,
 it is possible to say that they don't know this.
+
+
+Also, the detective (user) may examine the environment by sending a message of the following format:
+"
+Message to Environment:
+
+<message>
+", where "<message>" is a placeholder for a message.
+Here are some examples of possible messages to environment:
+* "Describe the crime scene"
+* "What blood type is the blood on the knife?" (in reply to a found knife with blood)
+* "What kind of pistol is that?" (in reply to a found pistol)
+* "Does John's housekeeper approve that John was home at the time of crime happening?"
+* "Is there any surveillance and what does it show on the time of a crime happening?"
+
+You should respond to such messages in the following format:
+"
+Answer from Environment:
+
+<response>
+", where "<response>" is the response of the Environment agent.
+The responses of the Environment agent are descriptions of things or some facts that detective could have gathered from:
+* attending a crime scene or any other public place that they have permission to go to
+* expert conclusions (for example, a chemist could have reasoned about a blood type)
+* quick survey of people, that agents mentioned (for example, a housekeeper of a suspect that allegedly approves of them being at home, when the crime happened)
+
+The Environment doesn't have any character.
+
+The detective may only and only observe the environment and collect the details that could be observed.
+They CANNOT interact with a physical world apart from some small stuff (like opening a secret box to see what's inside).
+For example, the detective CANNOT harm any characters, create objects that would spy on them, go back in time and so on.
+
+If the detective tries to affect the world physically in a significant way,
+you should respond that he couldn't do it and make up a reason that would comply with the world.
+For example, if the detective tries to enter a house that he's not allowed to enter and the door is closed, then you may respond that that door is closed.
+
+You can take the details of the environment/crime scene from a story description.
+If some details are missing, you can make them up, but be consistent with the story and character descriptions.
+When making up details, aim to make details that won't directly point to the real criminal, unless it's impossible.
+The details should be consistent with the story.
+For example, if a real criminal says that some people saw him on the other part of a town, when the crime was committed not there, then these people most likely shouldn't approve that.
 """
 
 
@@ -90,6 +131,10 @@ class Story(models.Model):
         return f"{self.title} ({self.id})"
 
 
+# Agent types
+SUSPECT, WITNESS, ENVIRONMENT = "SUSPECT", "WITNESS", "ENVIRONMENT"
+
+
 class Agent(models.Model):
     """
     Represents an agent that can be interacted with in a story. The agent is linked to a story and has a name.
@@ -107,7 +152,7 @@ class Agent(models.Model):
     relationships = models.TextField()
     knowledge = models.TextField()
 
-    agent_type = models.TextField()
+    agent_type = models.TextField()  # either SUSPECT, WITNESS or ENVIRONMENT
 
     def get_system_prompt_description(self):
         return (f"Description of {self.name}:\n"
@@ -156,7 +201,8 @@ class StoryCompletion(models.Model):
 
         names = [agent.name async for agent in story.agents()]
 
-        descriptions = [agent.get_system_prompt_description() async for agent in story.agents()]
+        descriptions = [agent.get_system_prompt_description() async for agent in story.agents()
+                        if agent.agent_type != ENVIRONMENT]
 
         system_prompt = get_system_prompt(story.extensive_solution, names, descriptions)
 
