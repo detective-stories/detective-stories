@@ -14,13 +14,13 @@ class StoryAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "title",
-        "description",
+        "prelude",
         "cover_image_url",
-        "solution",
+        "extensive_solution",
         "created_at",
         "updated_at",
     ]
-    search_fields = ("title", "description")
+    search_fields = ("title", "prelude")
 
 
 @admin.register(Agent)
@@ -29,9 +29,14 @@ class AgentAdmin(admin.ModelAdmin):
         "id",
         "story",
         "name",
-        "prompt",
+        "background",
+        "hidden",
+        "alibi",
+        "character",
+        "relationships",
+        "knowledge",
     ]
-    search_fields = ("name", "prompt")
+    search_fields = ("name", "background")
 
 
 @admin.register(StoryCompletion)
