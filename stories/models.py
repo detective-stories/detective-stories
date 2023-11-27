@@ -14,7 +14,7 @@ from users.models import User
 logger = logging.getLogger(__name__)
 
 
-def get_system_prompt(full_desc: str, names: list[str], descriptions: list[str]) -> str:
+def get_system_prompt(full_desc: str, names: list[str], agent_descriptions: list[str]) -> str:
     return f"""
 The detective story:
 
@@ -23,24 +23,42 @@ The detective story:
 Characters for this story are
 {
     (linesep + linesep).join([
-        f"{name}: {desc}" for name, desc in zip(names, descriptions)
+        f"{desc}" for desc in agent_descriptions
     ])
 }
 
-The user is detective.
+The characters are defined in the following format:
+"
+Description of <name>:
+* Background: <background> # a short story of a character. When acting as a character, you can derive their behaviours from the background
+* Hidden: <hidden info> # information that a character hides from the society for different reasons
+* Alibi: <alibi> # an alibi proposed by the character
+* Character: <character> # a neat description of a character's behaviour. When acting as a character, you should act in alignment with this description
+* Relationships: <relationships> # a description of relationships of this character with other characters. If some relationships are not specify, you can deside them yourself, but you should be consistent
+* Knowledge: <knowledge> # facts that the character knows or doesn't know
+", where "<placeholder>" are placeholders for strings, and the text after "#" is the description of the field.
 
-You need to act for {", ".join(names)}.
-The user message will start with
-"Message to [{"/".join(names)}]:
+The user is a detective.
 
-<message here>"
-You should start your answer with
+You need to act for characters: {", ".join(names)}.
+
+Here is the format of a user message:
+"
+Message to [{"/".join(names)}]:
+
+<message>
+", where "<message>" is a placeholder for a message and "[...]" represents on of the names from the list
+
+Here is a format in which you should respond:
 "Answer from [{"/".join(names)}]:
 
-<answer here>".
-When answering, you should act like a respective person, not like an AI assistant. Speak only English. 
-Try to answer shortly similar to how a human would answer in a casual conversation. 
-Also stick concreete character behavior (the way he anwer is described above).
+<answer>
+", where "<message>" is a placeholder for a message and "[...]" represents on of the names from the list
+
+When answering, you should act like a respective person, not like an AI assistant.
+Speak only English.
+Try to answer shortly, similar to how a human would answer in a casual conversation.
+Also stick to a concrete character behavior and the way they speak (the way they answer is described above).
 
 The detective (user) knows just the setting at the beginning. He has no prior knowledge of the story.
 If he is saying something controversial to what was said before or what is stated in the story's settings,
@@ -50,18 +68,18 @@ Act like all characters have their own private talks with the detective.
 
 You can make up some information but you need to be consistent with it.
 
-When answering take into account, who knows what. If a person does not know something,
-it is possible to say that he doesn't know this.
-            """
+When answering, take into account, who knows what. If a person does not know something,
+it is possible to say that they don't know this.
+"""
 
 
 class Story(models.Model):
     id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=256)
-    description = models.TextField()  # story description
+    prelude = models.TextField()  # story description
     # Cover image URL (will be shown in the story description)
     cover_image_url = models.URLField(null=True, blank=True)
-    solution = (
+    extensive_solution = (
         models.TextField()
     )  # story solution that will be shown after the story is solved
 
@@ -85,7 +103,29 @@ class Agent(models.Model):
     id = models.AutoField(primary_key=True)
     story = models.ForeignKey(Story, on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
-    prompt = models.TextField()
+
+    background = models.TextField()
+    hidden = models.TextField()
+    alibi = models.TextField()
+    character = models.TextField()
+    relationships = models.TextField()
+    knowledge = models.TextField()
+
+    agent_type = models.TextField()
+
+    def get_system_prompt_description(self):
+        return (f"Description of {self.name}:\n"
+                f"Background: {self.background}\n"
+                f"Hidden: {self.hidden}\n"
+                f"Alibi: {self.alibi}\n"
+                f"Character: {self.character}\n"
+                f"Relationships: {self.relationships}\n"
+                f"Knowledge: {self.knowledge}")
+
+    def get_open_description(self):
+        return (f"{self.name}:\n"
+                f"* Background: {self.background}\n"
+                f"* Proposed alibi: {self.alibi}")
 
     def __str__(self):
         return f"{self.name} @ {self.story.title} ({self.id})"
@@ -120,9 +160,9 @@ class StoryCompletion(models.Model):
 
         names = [agent.name async for agent in story.agents()]
 
-        descriptions = [agent.prompt async for agent in story.agents()]
+        descriptions = [agent.get_system_prompt_description() async for agent in story.agents()]
 
-        system_prompt = get_system_prompt(story.solution, names, descriptions)
+        system_prompt = get_system_prompt(story.extensive_solution, names, descriptions)
 
         print(system_prompt)
 

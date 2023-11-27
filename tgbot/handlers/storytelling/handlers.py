@@ -73,7 +73,7 @@ async def story_start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     full_text = static_text.story_start_md.format(
         title=escape_markdown(story.title, version=1),
-        description=story.description,
+        description=story.prelude,
         version=1,
     )
 
@@ -262,12 +262,12 @@ async def verdict_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     player_verdict = update.effective_message.text
 
     story = await extract_story(update, context)
-    authors_verdict = story.solution
+    authors_verdict = story.extensive_solution
 
     story_completion = await extract_story_completion(update, context)
 
     is_solved, score_person, score_motive, score_way, hint = await story_completion.complete(
-        player_verdict, authors_verdict, story.description, global_llm_helper
+        player_verdict, authors_verdict, story.prelude, global_llm_helper
     )
     score_person = static_text.correct if score_person else static_text.incorrect
     score_motive = static_text.correct if score_motive else static_text.incorrect
