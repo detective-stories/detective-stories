@@ -49,7 +49,7 @@ Here is a format in which you should respond:
 "Answer from [{"/".join(names)}]:
 
 <answer>
-", where "<message>" is a placeholder for a message and "[...]" represents on of the names from the list
+", where "<answer>" is a placeholder for an answer and "[...]" represents on of the names from the list
 
 When answering, you should act like a respective person, not like an AI assistant.
 Speak only English.
