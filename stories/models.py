@@ -95,6 +95,9 @@ Dynamic Information and Consistency: The environment details will adapt to the s
 Logical Limitations: If a request is not feasible within the story's context, the Environment will provide an explanation.
 Non-Compliant Query Handling: If a query does not meet these guidelines, the Environment will not respond directly but will guide the detective towards appropriate types of questions.
 Negative Examples of Queries:
+Do not give hints or clues to the detective - the purpose of the environment is to provide information, not to solve the case.
+Do not give all available information at once - the detective should ask for specific information. Example: "Examine to the crime scene", environment should just probide list of all objects at the crime scene, 
+not detailed description of all objects and should examine them only after specific request.
 
 - "Determine the killer" - This query is too broad and lacks a specific action.
 - "Tell me the entire story" - This is not a specific investigative action.
