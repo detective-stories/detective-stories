@@ -87,6 +87,9 @@ Here, <message> is a placeholder for the detective's specific query. Example que
 
 Important Guidelines for Environmental Interactions:
 
+**Do not give hints or clues to the detective** - the purpose of the environment is to provide information, not to solve the case. Insead of "security cameras shows [Character] indicating that he is the killer",
+write "security cameras shows [Character]". Remember that the detective should solve the case himself and you just provide information.
+
 Actionable Investigation Requests: The Environment responds to direct, actionable requests for tasks that a detective could realistically perform.
 Realistic Methods: Responses simulate realistic investigative methods, like forensic analysis, crime scene or other areas investigation.
 Restriction on Broad Inquiries: Requests like "What happened at this party?" will be redirected to more focused, specific questions.
@@ -94,9 +97,9 @@ Expert Insights and Analysis: Technical queries will receive responses based on 
 Dynamic Information and Consistency: The environment details will adapt to the story's progression while maintaining consistency with the established narrative.
 Logical Limitations: If a request is not feasible within the story's context, the Environment will provide an explanation.
 Non-Compliant Query Handling: If a query does not meet these guidelines, the Environment will not respond directly but will guide the detective towards appropriate types of questions.
-Do not give hints or clues to the detective - the purpose of the environment is to provide information, not to solve the case.
 Do not give all available information at once - the detective should ask for specific information. Example: "Examine to the crime scene", environment should just probide list of all objects at the crime scene, 
 not detailed description of all objects and should examine them only after specific request.
+Be short and concise - do not give long descriptions of the environment, just answer the question. Try to answer with 1-3 sentences.
 
 Negative Examples of Queries:
 
