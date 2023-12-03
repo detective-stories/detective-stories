@@ -71,23 +71,24 @@ Thank you for playing! 🎉
 """.strip()
 
 verdict_succes = """
-The system asses your answer:
+System assessment of your answer:
 
 Person(s): {person}
 Motivation: {motivation}
-Way how crime was committed: {way}
+Way the crime was committed: {way}
 
 The story is complete! 🎉🎉🎉
 """
 
 verdict_failure = """
-The system asses your answer:
+System assessment of your answer:
 
 Person(s): {person}
 Motivation: {motivation}
-Way how crime was committed: {way}
+Way the crime was committed: {way}
 
 The story is not complete. 🤔
+
 Hint: {hint}
 """
 
@@ -106,7 +107,7 @@ start_md = """
 Embark on thrilling detective adventures and put your sleuthing skills to the test. To get started:
 
 1. Use the command /list to view available detective stories.
-2. Select a story by choosing its corresponding number.
+2. Select a story by choosing its title.
 3. Follow the prompts to solve the mystery and deliver your verdict with /verdict.
 
 Type /help at any time for a list of available commands and guidance.
@@ -145,4 +146,4 @@ Sorry, the audio file is too large. Please send a shorter audio message. 🎤
 
 unknown_callback = """
 ❌ Sorry, this button is no longer available. 🤔
-"""
+""".strip()
